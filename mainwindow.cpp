@@ -429,7 +429,6 @@ void MainWindow::on_exportDataButton_clicked() {
     node* nIn  = p->getNodeIn();
     node* nOut = p->getNodeOut();
 
-    // Skip pores with missing nodes
     if (!nIn || !nOut) {
         skippedPores++;
         continue;
