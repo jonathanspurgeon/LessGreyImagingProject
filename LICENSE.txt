@@ -1,0 +1,8 @@
+/*******************************************************
+ * Copyright (C) Ahmed Hamdi Boujelben <ahmed.hamdi.boujelben@gmail.com>
+ * 
+ * The .h and .cpp files in the current folder are part of bioFLOW source code.
+ * 
+ * bioFLOW source code can not be copied and/or distributed without the express
+ * permission of Ahmed Hamdi Boujelben and Steven McDougall.
+ *******************************************************/
