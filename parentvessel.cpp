@@ -1,10 +1,3 @@
-/////////////////////////////////////////////////////////////////////////////
-/// Author:      Ahmed Hamdi Boujelben <ahmed.hamdi.boujelben@gmail.com>
-/// Created:     2016
-/// Copyright:   (c) 2020 Ahmed Hamdi Boujelben
-/// Licence:     Attribution-NonCommercial 4.0 International
-/////////////////////////////////////////////////////////////////////////////
-
 #include "network.h"
 #include "tools.h"
 
@@ -38,9 +31,9 @@ void network::createParentVessel() {
       }
 
   for (int i = 0; i < Ny; i++) {
-    node* n = new node(0, i, 0);
+    node* n = new node(Nx/2, i, Nz/2);
     tableOfAllNodes.push_back(n);
-    tableOfNodes[0][i][0] = n;
+    tableOfNodes[Nx/2][i][Nz/2] = n;
     n->setId(i + 1);
     n->setXCoordinate(n->getIndexX() * length);
     n->setYCoordinate(n->getIndexY() * length);
@@ -78,15 +71,15 @@ void network::createParentVessel() {
 
   pore* inletPore = new pore(getNode(0), 0);
   tableOfAllPores.push_back(inletPore);
-  tableOfPoresX[0][0][0] = inletPore;
+  tableOfPoresX[Nx/2][0][Nz/2] = inletPore;
   pore* outletPore = new pore(0, getNode(Ny - 1));
   tableOfAllPores.push_back(outletPore);
-  tableOfPoresX[0][Ny - 1][0] = outletPore;
+  tableOfPoresX[Nx/2][Ny - 1][Nz/2] = outletPore;
 
   for (int i = 0; i < Ny - 1; i++) {
     pore* p = new pore(getNode(i + 1), getNode(i));
     tableOfAllPores.push_back(p);
-    tableOfPoresY[0][i + 1][0] = p;
+    tableOfPoresY[Nx/2][i + 1][Nz/2] = p;
   }
 
   for (int i = 0; i < totalPores; ++i) {

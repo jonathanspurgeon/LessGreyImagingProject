@@ -94,10 +94,7 @@ void network::setupModel() {
 
   if (networkSource == 4)  // parent vessel tumour
   {
-    if (Nz < 5)
       createParentVessel();
-    else
-      createParentVessel3D();
   }
 
   if (networkSource == 5)  // parent vessel retina

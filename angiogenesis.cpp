@@ -75,90 +75,119 @@ void network::runAngiogenesisOnLattice() {
 }
 
 void network::setupTAFDistribution() {
-  for (int i = 0; i < totalBlocks; ++i) {
-    block *b = getBlock(i);
-    if (!b->getClosed()) {
-      double TAF(0);
-      if (networkSource == 4)  // Tumour
-      {
-        if (circularTumour) {
-          double mu = (sqrt(5) - 0.1) / (sqrt(5) - 1);
-          double r =
-              Nz < 5 ? sqrt(pow(b->getXCoordinate() / xEdgeLength - 1, 2) +
-                            pow(b->getYCoordinate() / yEdgeLength - 0.5, 2))
-                     : sqrt(pow(b->getXCoordinate() / xEdgeLength - 1, 2) +
-                            pow(b->getYCoordinate() / yEdgeLength - 0.5, 2) +
-                            pow(b->getZCoordinate() / zEdgeLength - 0.5, 2));
-          if (r > 0 && r <= 0.1) TAF = 1;
-          if (r > 0.1) TAF = pow((mu - r) / (mu - 0.1), 2);
+    for (int i = 0; i < totalBlocks; ++i) {
+        block *b = getBlock(i);
+        if (!b->getClosed()) {
+            double TAF(0);
+            if (networkSource == 4)  // Tumour
+            {
+                if (circularTumour) {
+                    // Define tumor centers at all 6 face centers
+                    vector<vector<double>> tumorCenters = {
+                        {1.0, 0.5, 0.5},  // Right face (x=1)
+                        {0.0, 0.5, 0.5},  // Left face (x=0)  
+                        {0.5, 1.0, 0.5},  // Front face (y=1)
+                        {0.5, 0.0, 0.5},  // Back face (y=0)
+                        {0.5, 0.5, 1.0},  // Top face (z=1)
+                        {0.5, 0.5, 0.0}   // Bottom face (z=0)
+                    };
+                    
+                    double maxTAF = 0;
+                    double mu = (sqrt(5) - 0.1) / (sqrt(5) - 1);
+                    
+                    // Calculate TAF contribution from each tumor center
+                    for (const auto& center : tumorCenters) {
+                        double r = sqrt(
+                            pow(b->getXCoordinate() / xEdgeLength - center[0], 2) +
+                            pow(b->getYCoordinate() / yEdgeLength - center[1], 2) +
+                            pow(b->getZCoordinate() / zEdgeLength - center[2], 2)
+                        );
+                        
+                        double localTAF = 0;
+                        if (r > 0 && r <= 0.1) localTAF = 1;
+                        if (r > 0.1) localTAF = pow((mu - r) / (mu - 0.1), 2);
+                        
+                        // Take maximum TAF from any tumor center
+                        maxTAF = std::max(maxTAF, localTAF);
+                    }
+                    
+                    TAF = maxTAF;
+                }
+                if (linearTumour) {
+                    TAF = exp(-pow(1 - b->getXCoordinate() / xEdgeLength, 2) / 0.45);
+                }
+            }
+            // ... rest of retina case
+            b->setTAFConcentration(TAF);
         }
-        if (linearTumour) {
-          TAF = exp(-pow(1 - b->getXCoordinate() / xEdgeLength, 2) / 0.45);
-        }
-      }
-      if (networkSource == 5)  // Retina
-      {
-        double mu = 1;
-        double r = sqrt(pow(b->getXCoordinate() / xEdgeLength - 0.5, 2) +
-                        pow(b->getYCoordinate() / yEdgeLength - 0.5, 2));
-        TAF =
-            1 - 0.45 * exp(-pow(2 * r, 2) / 0.45);  // exp(-pow(1-2*r,2)/0.45);
-      }
-      b->setTAFConcentration(TAF);
     }
-  }
 }
 
 void network::setupFNDistribution() {
-  for (int i = 0; i < totalBlocks; ++i) {
-    block *b = getBlock(i);
-    if (!b->getClosed()) {
-      double FN(0);
-      if (networkSource == 4)  // Tumour
-      {
-        FN = 0.75 * exp(-pow(b->getXCoordinate() / xEdgeLength, 2) / 0.45);
-      }
-      if (networkSource == 5)  // Retina
-      {
-        double mu = 1;
-        double r = sqrt(pow(b->getXCoordinate() / xEdgeLength - 0.5, 2) +
-                        pow(b->getYCoordinate() / yEdgeLength - 0.5, 2));
-        FN = 0.1;  // 0.75*exp(-pow(2*r,2)/0.45);
-      }
-      b->setFNConcentration(FN);
+    for (int i = 0; i < totalBlocks; ++i) {
+        block *b = getBlock(i);
+        if (!b->getClosed()) {
+            double FN(0);
+            if (networkSource == 4)  // Tumour
+            {
+                if (circularTumour) {
+                    // Define tumor centers at all 6 face centers (same as TAF)
+                    vector<vector<double>> tumorCenters = {
+                        {1.0, 0.5, 0.5},  // Right face (x=1)
+                        {0.0, 0.5, 0.5},  // Left face (x=0)  
+                        {0.5, 1.0, 0.5},  // Front face (y=1)
+                        {0.5, 0.0, 0.5},  // Back face (y=0)
+                        {0.5, 0.5, 1.0},  // Top face (z=1)
+                        {0.5, 0.5, 0.0}   // Bottom face (z=0)
+                    };
+                    
+                    double totalFN = 0;
+                    
+                    // Calculate FN contribution from each tumor center
+                    for (const auto& center : tumorCenters) {
+                        // Distance to this tumor center
+                        double distance = sqrt(
+                            pow(b->getXCoordinate() / xEdgeLength - center[0], 2) +
+                            pow(b->getYCoordinate() / yEdgeLength - center[1], 2) +
+                            pow(b->getZCoordinate() / zEdgeLength - center[2], 2)
+                        );
+                        
+                        // FN decays with distance from tumor center
+                        // Using similar exponential decay as original but centered around each tumor
+                        double localFN = 0.75 * exp(-pow(distance, 2) / 0.45);
+                        totalFN += localFN;
+                    }
+                    
+                    // Cap at maximum of 0.75 (original max value)
+                    FN = std::min(totalFN, 0.75);
+                } else if (linearTumour) {
+                    // Keep original linear behavior if needed
+                    FN = 0.75 * exp(-pow(b->getXCoordinate() / xEdgeLength, 2) / 0.45);
+                }
+            }
+            if (networkSource == 5)  // Retina
+            {
+                double mu = 1;
+                double r = sqrt(pow(b->getXCoordinate() / xEdgeLength - 0.5, 2) +
+                                pow(b->getYCoordinate() / yEdgeLength - 0.5, 2));
+                FN = 0.1;
+            }
+            b->setFNConcentration(FN);
+        }
     }
-  }
 }
 
 void network::initialiseSroutTips(std::set<int> &sproutTips) {
-  if (networkSource == 4)  // Tumour)
-  {
-    if (Nz < 5)
-      for (int i = 1; i < initialTipsNumber + 1; ++i) {
-        node *n = getNode(0, i * Ny / (initialTipsNumber + 1), 0);
-        n->setSprouTip(true);
-        sproutTips.insert(n->getId());
-      }
-    else
-      for (int i = 1; i < initialTipsNumber + 1; ++i) {
-        node *n = getNode(0, i * Ny / (initialTipsNumber + 1), Nz / 3);
-        n->setSprouTip(true);
-        sproutTips.insert(n->getId());
-        n = getNode(0, i * Ny / (initialTipsNumber + 1), 2 * Nz / 3);
-        n->setSprouTip(true);
-        sproutTips.insert(n->getId());
-      }
-  }
-
-  if (networkSource == 5)  // Retina
-  {
-    for (node *n : tableOfAllNodes) {
-      if (n->getId() <= 2)  // gangliom
-        continue;
-      n->setSprouTip(true);
-      sproutTips.insert(n->getId());
+    if (networkSource == 4) { // Tumour with central parent vessel
+        // Activate multiple nodes along the central parent vessel
+        for (int i = 0; i < initialTipsNumber; ++i) {
+            // Distribute tips along the central vessel
+            int y_pos = (i * Ny) / initialTipsNumber;
+            node *n = getNode(Nx/2, y_pos, Nz/2);
+            n->setSprouTip(true);
+            sproutTips.insert(n->getId());
+        }
     }
-  }
 }
 
 void network::calculateTimeStepForAngio() {
