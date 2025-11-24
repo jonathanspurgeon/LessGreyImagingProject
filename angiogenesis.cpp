@@ -37,6 +37,7 @@ void network::runAngiogenesisOnLattice() {
   while (timeSoFar < simulationTime) {
     timeSoFar += timeStep;
     timeToRemodel += timeStep;
+    recoveryTime+=timeStep;
 
     updateSproutTipPositions(sproutTips);  // update EC tips positions
 
@@ -48,6 +49,21 @@ void network::runAngiogenesisOnLattice() {
     {
       remodelVasculature();
       timeToRemodel = 0;
+      
+
+      // Save data to file
+      std::string filei2 = "Results/vesselData"
+                    + std::to_string(recoveryTime) + ".txt";
+            ofstream file2(filei2);
+            for(int i=0;i<totalPores;++i)
+            {
+                pore* p=getPore(i);
+
+                file2<<p->getMinXCoordinate()<<" "<<p->getMaxXCoordinate()<<" "<<p->getMinYCoordinate()<<" "<<p->getMaxYCoordinate()<<" "<<p->getMinZCoordinate()<<" "<<p->getMaxZCoordinate()<<" "<<p->getHDConcentration()<<" "<<p->getFlow()<<" "<<p->getAveragePressure()<<" "<<p->getConductivity()<<" "<<p->getRadius()<<" "<<p->getVolume()<<" "<<p->getViscosity()<<" "<<p->getMembranePermeability()<<" "<<p->getWSS()<<endl;
+
+            }
+
+
     }
 
     setBranching(sproutTips);  // perform branching

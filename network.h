@@ -309,6 +309,7 @@ class network : public QObject {
   double deltaP;
   double timeStep;
   double simulationTime;
+  double recoveryTime;
 
   ////////////// Misc Attributes //////////////
   bool record;
