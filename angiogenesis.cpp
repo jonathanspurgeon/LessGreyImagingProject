@@ -101,38 +101,33 @@ void network::setupTAFDistribution() {
             double TAF(0);
             if (networkSource == 4)  // Tumour
             {
-                if (circularTumour) {
-                    // Define tumor centers at all 6 face centers
-                    vector<vector<double>> tumorCenters = {
-                        {1.0, 0.5, 0.5},  // Right face (x=1)
-                        {0.0, 0.5, 0.5},  // Left face (x=0)  
-                        {0.5, 1.0, 0.5},  // Front face (y=1)
-                        {0.5, 0.0, 0.5},  // Back face (y=0)
-                        {0.5, 0.5, 1.0},  // Top face (z=1)
-                        {0.5, 0.5, 0.0}   // Bottom face (z=0)
-                    };
-                    
-                    double maxTAF = 0;
+                
+                if (circularTumour)
+                {
+                    double X = b->getXCoordinate() / xEdgeLength;
+                    double Y = b->getYCoordinate() / yEdgeLength;
+                    double Z = b->getZCoordinate() / zEdgeLength;
+
+                    // Distance to each of the 6 faces
+                    double d0 = X;        // distance to x = 0
+                    double d1 = 1.0 - X;  // distance to x = 1
+                    double d2 = Y;        // distance to y = 0
+                    double d3 = 1.0 - Y;  // distance to y = 1
+                    double d4 = Z;        // distance to z = 0
+                    double d5 = 1.0 - Z;  // distance to z = 1
+
+                    // r = distance to the nearest face
+                    double r = std::min({d0, d1, d2, d3, d4, d5});
+
                     double mu = (sqrt(5) - 0.1) / (sqrt(5) - 1);
-                    
-                    // Calculate TAF contribution from each tumor center
-                    for (const auto& center : tumorCenters) {
-                        double r = sqrt(
-                            pow(b->getXCoordinate() / xEdgeLength - center[0], 2) +
-                            pow(b->getYCoordinate() / yEdgeLength - center[1], 2) +
-                            pow(b->getZCoordinate() / zEdgeLength - center[2], 2)
-                        );
-                        
-                        double localTAF = 0;
-                        if (r > 0 && r <= 0.1) localTAF = 1;
-                        if (r > 0.1) localTAF = pow((mu - r) / (mu - 0.1), 2);
-                        
-                        // Take maximum TAF from any tumor center
-                        maxTAF = std::max(maxTAF, localTAF);
-                    }
-                    
-                    TAF = maxTAF;
+
+                    // Original decay logic
+                    if (r <= 0.1)
+                        TAF = 1.0;
+                    else
+                        TAF = pow((mu - r) / (mu - 0.1), 2);
                 }
+
                 if (linearTumour) {
                     TAF = exp(-pow(1 - b->getXCoordinate() / xEdgeLength, 2) / 0.45);
                 }
