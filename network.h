@@ -519,6 +519,7 @@ private:
     double deltaP;
     double timeStep;
     double simulationTime;
+    double recoveryTime;
 
 
     ////////////// Misc Attributes //////////////
