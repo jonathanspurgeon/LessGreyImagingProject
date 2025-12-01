@@ -1,0 +1,43 @@
+# --- Ignore all CSV data files ---
+*.csv
+
+# --- OS-specific files ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Python  ---
+__pycache__/
+build/
+dist/
+*.egg-info/
+
+# --- Virtual environments ---
+venv/
+ENV/
+env/
+
+# --- Editors / IDEs ---
+# VSCode
+.vscode/
+
+# PyCharm / IntelliJ
+.idea/
+
+# General editor backups
+*~
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# --- Git ---
+# Ignore what Git creates during merges, etc.
+*.orig

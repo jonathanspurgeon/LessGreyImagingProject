@@ -52,7 +52,7 @@ void network::runAngiogenesisOnLattice() {
       timeToRemodel = 0;
 
 
-      // Save data to file
+      // Save vessel data to file
       std::string filei2 = "Results/vesselData"
                     + std::to_string(recoveryTime) + ".csv";
             ofstream file2(filei2);
@@ -67,9 +67,38 @@ void network::runAngiogenesisOnLattice() {
                 file2<<p->getMinXCoordinate()<<","<<p->getMaxXCoordinate()<<","<<p->getMinYCoordinate()<<","<<p->getMaxYCoordinate()<<","<<p->getMinZCoordinate()<<","<<p->getMaxZCoordinate()<<","<<p->getHDConcentration()<<","<<p->getFlow()<<","<<p->getAveragePressure()<<","<<p->getConductivity()<<","<<p->getRadius()<<","<<p->getVolume()<<","<<p->getViscosity()<<","<<p->getMembranePermeability()<<","<<p->getWSS()<<endl;
 
             }
+    
 
 
+      // Save block data to file
+      std::string fileBlock = "Results/blockData" 
+                              + std::to_string(recoveryTime) + ".csv";
+      std::ofstream fileB(fileBlock);
 
+      // Header row
+      fileB << "X,Y,Z,"
+            << "Hx,Hy,Hz,"
+            << "Diffusivity,Conductivity,"
+            << "Concentration,OxygenConcentration,TAFConcentration,"
+            << "MDEConcentration,FNConcentration,HDConcentration,"
+            << std::endl;
+
+      for (int i = 0; i < totalBlocks; ++i)
+      {
+          block* b = getBlock(i);
+
+          fileB << b->getXCoordinate() << "," << b->getYCoordinate() << "," << b->getZCoordinate() << ","
+                << b->getHx() << "," << b->getHy() << "," << b->getHz() << "," 
+                << b->getDiffusivity() << "," 
+                << b->getConductivity() << ","
+                << b->getConcentration() << "," 
+                << b->getOxygenConcentration() << "," 
+                << b->getTAFConcentration() << ","
+                << b->getMDEConcentration() << "," 
+                << b->getFNConcentration() << "," 
+                << b->getHDConcentration() << ","
+                << std::endl;
+      }
 
 
     }
