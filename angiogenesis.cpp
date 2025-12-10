@@ -67,7 +67,7 @@ void network::runAngiogenesisOnLattice() {
                 file2<<p->getMinXCoordinate()<<","<<p->getMaxXCoordinate()<<","<<p->getMinYCoordinate()<<","<<p->getMaxYCoordinate()<<","<<p->getMinZCoordinate()<<","<<p->getMaxZCoordinate()<<","<<p->getHDConcentration()<<","<<p->getFlow()<<","<<p->getAveragePressure()<<","<<p->getConductivity()<<","<<p->getRadius()<<","<<p->getVolume()<<","<<p->getViscosity()<<","<<p->getMembranePermeability()<<","<<p->getWSS()<<endl;
 
             }
-    
+
 
 
       // Save block data to file
@@ -257,6 +257,7 @@ void network::updateChemicalConcentrations() {
       2;
 
   double timeSoFar(0);
+
   while (timeSoFar < timeStep) {
     timeSoFar += subTimeStep;
     double dimensionPreFactor = Nz < 5 ? 4 : 6;
@@ -273,6 +274,7 @@ void network::updateChemicalConcentrations() {
                      dimensionPreFactor * subTimeStep * angio_Epsilon / h_sq);
     double coeff3 = subTimeStep * angio_Epsilon / h_sq;
     // update TAF, FN, MDE (maps)
+
     for (int i = 0; i < totalBlocks; ++i) {
       block *n = getBlock(i);
       if (!n->getClosed()) {
@@ -285,15 +287,16 @@ void network::updateChemicalConcentrations() {
         node *s = getNode(ii, jj, kk);
         if (s != 0 && s->getSprouTip()) endothelialDensity = 1;
 
+
         double MDEconcentration = 0;
+        double TAFconcentration = n->getTAFConcentration();
+        double FNconcentration  = n->getFNConcentration();
 
         if (endothelialDensity == 1) {
-          blockTAFConcentration.push_back(n->getTAFConcentration() *
-                                          (1 - subTimeStep * angio_Eta));
-          blockFNConcentration.push_back(
-              n->getFNConcentration() *
-                  (1 - subTimeStep * angio_Gamma * n->getMDEConcentration()) +
-              subTimeStep * angio_Beta);
+          TAFconcentration = TAFconcentration * (1 - subTimeStep * angio_Eta);
+          FNconcentration  = FNconcentration *
+             (1 - subTimeStep * angio_Gamma * n->getMDEConcentration())
+             + subTimeStep * angio_Beta;
           MDEconcentration = coeff1;
         }
 
@@ -326,14 +329,24 @@ void network::updateChemicalConcentrations() {
           if (nU == 0) MDEconcentration += coeff3 * n->getMDEConcentration();
 
         blockMDEConcentration.push_back(MDEconcentration);
+        blockTAFConcentration.push_back(TAFconcentration);
+        blockFNConcentration.push_back(FNconcentration);
+
       }
     }
 
     unsigned j(0);
+
     for (int i = 0; i < totalBlocks; ++i) {
       block *n = getBlock(i);
       if (!n->getClosed()) {
+
         n->setMDEConcentration(blockMDEConcentration[j]);
+        n->setTAFConcentration(blockTAFConcentration[j]);
+        n->setFNConcentration(blockFNConcentration[j]);
+        
+
+
         j++;
         if (n->getMDEConcentration() < 0 || n->getMDEConcentration() > 1) {
           cout << "MDE concentration out of range: " << n->getMDEConcentration()

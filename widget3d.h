@@ -22,6 +22,7 @@
 #include <QOpenGLFramebufferObject>
 #include <QApplication>
 
+
 class widget3d : public QGLWidget
 {
     Q_OBJECT
@@ -29,6 +30,7 @@ public :
     widget3d (QWidget *parent=0)
         : QGLWidget (QGLFormat(QGL::SampleBuffers),parent)
     {
+
         net=0;
 
         light=true;
